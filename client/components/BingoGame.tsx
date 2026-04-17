@@ -80,11 +80,14 @@ const checkBingo = (markedCells: Set<string>): boolean => {
   return diag1 || diag2;
 };
 
-export default function BingoGame() {
-  const [cards, setCards] = useState<BingoCardData[]>([
-    generateBingoCard(6),
-    generateBingoCard(7),
-  ]);
+interface BingoGameProps {
+  boardNumbers?: number[];
+}
+
+export default function BingoGame({ boardNumbers = [6, 7] }: BingoGameProps) {
+  const [cards, setCards] = useState<BingoCardData[]>(
+    boardNumbers.map((num) => generateBingoCard(num))
+  );
   const [calledNumbers, setCalledNumbers] = useState<Set<number>>(new Set());
   const [currentNumber, setCurrentNumber] = useState<number | null>(null);
   const [lastThreeNumbers, setLastThreeNumbers] = useState<number[]>([]);
@@ -128,7 +131,7 @@ export default function BingoGame() {
   }, [calledNumbers]);
 
   const resetGame = () => {
-    setCards([generateBingoCard(6), generateBingoCard(7)]);
+    setCards(boardNumbers.map((num) => generateBingoCard(num)));
     setCalledNumbers(new Set());
     setCurrentNumber(null);
   };
