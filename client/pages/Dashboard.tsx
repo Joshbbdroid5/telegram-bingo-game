@@ -1,29 +1,30 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Navigation-f kan itti dabalame
 
 // Telegram Web App API
 const tele = (window as any).Telegram?.WebApp;
 
 const WesternDashboard = () => {
+  const navigate = useNavigate(); // Gara fuula biraatti si dabarsa
   const [user, setUser] = useState<any>(null);
-  const [balance, setBalance] = useState(250.75); // Fakkeenyaaf (Bor database irraa dhufa)
+  const [balance, setBalance] = useState(250.75);
 
   useEffect(() => {
     if (tele) {
       tele.ready();
       tele.expand();
       setUser(tele.initDataUnsafe?.user);
-      // Theme Telegram akka hordofuuf
       tele.setHeaderColor('secondary_bg_color');
     }
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#f0f2f5] font-sans selection:bg-blue-100">
+    <div className="min-h-screen bg-[#f0f2f5] font-sans">
       {/* Header & Profile */}
       <div className="bg-[#24a1de] pt-8 pb-16 px-6 rounded-b-[40px] shadow-2xl relative">
         <div className="flex items-center justify-between text-white">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 text-xl font-black">
+            <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 text-xl font-black text-white">
               {user?.first_name?.charAt(0) || "B"}
             </div>
             <div>
@@ -33,7 +34,7 @@ const WesternDashboard = () => {
               </h1>
             </div>
           </div>
-          <button className="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-all">
+          <button className="p-2 bg-white/10 rounded-xl">
             <span className="text-2xl">🔔</span>
           </button>
         </div>
@@ -48,7 +49,7 @@ const WesternDashboard = () => {
                 <span className="text-sm font-bold text-blue-600">ETB</span>
               </div>
             </div>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-lg shadow-blue-200 active:scale-95 transition-all">
+            <button className="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all">
               Add Cash
             </button>
           </div>
@@ -60,8 +61,11 @@ const WesternDashboard = () => {
         <h3 className="text-gray-500 text-[11px] font-bold uppercase tracking-widest mb-4 ml-1">Main Menu</h3>
         
         <div className="grid grid-cols-2 gap-4">
-          {/* Play Button - Large */}
-          <button className="col-span-2 bg-gradient-to-r from-blue-600 to-blue-500 p-5 rounded-[24px] shadow-lg shadow-blue-100 flex items-center justify-between text-white active:scale-[0.98] transition-all">
+          {/* Button Tapha Jalqabi - Gara Bingo si dabarsa */}
+          <button 
+            onClick={() => navigate('/bingo')} // Kallaattiin gara /bingo tti si dabarsa
+            className="col-span-2 bg-gradient-to-r from-blue-600 to-blue-500 p-5 rounded-[24px] shadow-lg shadow-blue-100 flex items-center justify-between text-white active:scale-[0.98] transition-all"
+          >
             <div className="flex items-center gap-4">
               <div className="bg-white/20 p-3 rounded-2xl text-2xl">🎮</div>
               <div className="text-left">
@@ -72,29 +76,20 @@ const WesternDashboard = () => {
             <span className="text-xl">➜</span>
           </button>
 
-          {/* Other Small Buttons */}
+          {/* Buttons biroon ... */}
           {[
             { icon: "📜", label: "History", color: "bg-orange-50 text-orange-600" },
             { icon: "🏆", label: "Winners", color: "bg-green-50 text-green-600" },
             { icon: "🎁", label: "Rewards", color: "bg-purple-50 text-purple-600" },
             { icon: "⚙️", label: "Settings", color: "bg-gray-100 text-gray-600" }
           ].map((item, i) => (
-            <button key={i} className="bg-white p-4 rounded-[24px] shadow-sm border border-gray-100 flex flex-col items-center gap-2 active:scale-95 transition-all">
+            <button key={i} className="bg-white p-4 rounded-[24px] shadow-sm border border-gray-100 flex flex-col items-center gap-2 active:scale-95 transition-all text-gray-700">
               <div className={`${item.color} w-12 h-12 rounded-2xl flex items-center justify-center text-2xl`}>
                 {item.icon}
               </div>
-              <span className="font-bold text-xs text-gray-700">{item.label}</span>
+              <span className="font-bold text-xs">{item.label}</span>
             </button>
           ))}
-        </div>
-
-        {/* Daily Tasks / Promo */}
-        <div className="mt-8 bg-blue-50 rounded-[24px] p-5 border border-blue-100 flex items-center gap-4">
-          <div className="text-3xl animate-bounce">🔥</div>
-          <div>
-            <p className="text-sm font-bold text-blue-900">Jackpot Sa'aatii 3:00</p>
-            <p className="text-[10px] text-blue-600 font-medium">Hirmaadhuu 10,000 ETB injifadhu!</p>
-          </div>
         </div>
       </div>
     </div>
