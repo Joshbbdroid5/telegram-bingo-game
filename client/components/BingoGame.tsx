@@ -82,9 +82,10 @@ const checkBingo = (markedCells: Set<string>): boolean => {
 
 interface BingoGameProps {
   boardNumbers?: number[];
+  stake?: string;
 }
 
-export default function BingoGame({ boardNumbers = [6, 7] }: BingoGameProps) {
+export default function BingoGame({ boardNumbers = [6, 7], stake = '10' }: BingoGameProps) {
   const [cards, setCards] = useState<BingoCardData[]>(
     boardNumbers.map((num) => generateBingoCard(num))
   );
@@ -143,7 +144,7 @@ export default function BingoGame({ boardNumbers = [6, 7] }: BingoGameProps) {
         cartela={cards.length}
         called={calledNumbers.size}
         wallet={50}
-        derrah={2056}
+        derrah={parseInt(stake)}
       />
 
       {/* Main Layout */}

@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Navigation-f kan itti dabalame
+import { useNavigate } from 'react-router-dom';
+import { Gamepad2, History, Wallet, User } from 'lucide-react';
 
 // Telegram Web App API
 const tele = (window as any).Telegram?.WebApp;
 
-const WesternDashboard = () => {
-  const navigate = useNavigate(); // Gara fuula biraatti si dabarsa
+const Dashboard = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
-  const [balance, setBalance] = useState(250.75);
 
   useEffect(() => {
     if (tele) {
@@ -19,81 +19,98 @@ const WesternDashboard = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#f0f2f5] font-sans">
-      {/* Header & Profile */}
-      <div className="bg-[#24a1de] pt-8 pb-16 px-6 rounded-b-[40px] shadow-2xl relative">
-        <div className="flex items-center justify-between text-white">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30 text-xl font-black text-white">
-              {user?.first_name?.charAt(0) || "B"}
-            </div>
-            <div>
-              <p className="text-xs font-medium opacity-80 uppercase tracking-wider">Welcome back,</p>
-              <h1 className="text-xl font-bold truncate max-w-[150px]">
-                {user?.first_name || "Guest User"}
-              </h1>
-            </div>
+    <div className="min-h-screen bg-gradient-to-b from-[#2d1b4e] to-[#1a0f2e] text-white flex flex-col">
+      {/* Header */}
+      <div className="px-6 pt-6 pb-8">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="w-10 h-10 bg-gradient-to-br from-cyan-300 to-cyan-400 rounded-full flex items-center justify-center font-black text-purple-900">
+            B
           </div>
-          <button className="p-2 bg-white/10 rounded-xl">
-            <span className="text-2xl">🔔</span>
-          </button>
+          <h1 className="text-xl font-bold">Western Bingo</h1>
         </div>
 
-        {/* Floating Wallet Card */}
-        <div className="absolute -bottom-10 left-6 right-6 bg-white rounded-[24px] p-6 shadow-xl border border-gray-100">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-[2px]">Total Balance</p>
-              <div className="flex items-baseline gap-1 mt-1">
-                <span className="text-3xl font-black text-gray-900">{balance.toLocaleString()}</span>
-                <span className="text-sm font-bold text-blue-600">ETB</span>
-              </div>
-            </div>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold active:scale-95 transition-all">
-              Add Cash
+        {/* Rules Button */}
+        <button className="flex items-center gap-2 text-sm border border-white/30 rounded-full px-4 py-2 hover:bg-white/10 transition-all">
+          <span className="w-5 h-5 rounded-full border-2 border-white/50 flex items-center justify-center text-xs">⚙</span>
+          <span>Rules</span>
+        </button>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 px-6 py-8">
+        {/* Welcome Heading */}
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-bold mb-2">
+            Welcome to <span className="text-yellow-400">Western</span>
+          </h2>
+          <h3 className="text-4xl font-bold text-yellow-400">Bingo</h3>
+        </div>
+
+        {/* Choose Your Stake Box */}
+        <div className="border border-white/30 rounded-3xl p-6 mb-8 bg-white/5 backdrop-blur-sm">
+          <div className="flex items-center gap-2 text-white/80 mb-6 font-bold">
+            <span className="text-yellow-400">▶</span>
+            <span>Choose Your Stake</span>
+          </div>
+
+          {/* Stake Buttons */}
+          <div className="space-y-3">
+            <button
+              onClick={() => navigate('/boardselection?stake=10')}
+              className="w-full bg-gradient-to-r from-cyan-400 to-cyan-500 hover:from-cyan-500 hover:to-cyan-600 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-95"
+            >
+              <span className="text-xl">▶</span>
+              <span className="text-lg">Play 10</span>
+            </button>
+            <button
+              onClick={() => navigate('/boardselection?stake=20')}
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-95"
+            >
+              <span className="text-xl">▶</span>
+              <span className="text-lg">Play 20</span>
             </button>
           </div>
+        </div>
+
+        {/* Stats Box */}
+        <div className="border border-white/30 rounded-3xl p-6 bg-white/5 backdrop-blur-sm text-center">
+          <p className="text-white/60 text-sm mb-2">Total Prize Pool</p>
+          <p className="text-3xl font-black text-yellow-400">45,000+</p>
         </div>
       </div>
 
-      {/* Main Actions Area */}
-      <div className="mt-16 px-6 pb-10">
-        <h3 className="text-gray-500 text-[11px] font-bold uppercase tracking-widest mb-4 ml-1">Main Menu</h3>
-        
-        <div className="grid grid-cols-2 gap-4">
-          {/* Button Tapha Jalqabi - Gara Bingo si dabarsa */}
-          <button 
-            onClick={() => navigate('/bingo')} // Kallaattiin gara /bingo tti si dabarsa
-            className="col-span-2 bg-gradient-to-r from-blue-600 to-blue-500 p-5 rounded-[24px] shadow-lg shadow-blue-100 flex items-center justify-between text-white active:scale-[0.98] transition-all"
+      {/* Bottom Navigation */}
+      <div className="border-t border-white/20 bg-white/5 backdrop-blur-sm">
+        <div className="flex justify-around items-center px-4 py-4 max-w-2xl mx-auto w-full">
+          <button
+            onClick={() => navigate('/')}
+            className="flex flex-col items-center gap-1 text-cyan-400 active:opacity-70 transition-all"
           >
-            <div className="flex items-center gap-4">
-              <div className="bg-white/20 p-3 rounded-2xl text-2xl">🎮</div>
-              <div className="text-left">
-                <p className="font-black text-lg">Tapha Jalqabi</p>
-                <p className="text-[10px] opacity-80">Join available bingo rooms</p>
-              </div>
-            </div>
-            <span className="text-xl">➜</span>
+            <Gamepad2 size={24} />
+            <span className="text-xs font-semibold">Game</span>
           </button>
-
-          {/* Buttons biroon ... */}
-          {[
-            { icon: "📜", label: "History", color: "bg-orange-50 text-orange-600" },
-            { icon: "🏆", label: "Winners", color: "bg-green-50 text-green-600" },
-            { icon: "🎁", label: "Rewards", color: "bg-purple-50 text-purple-600" },
-            { icon: "⚙️", label: "Settings", color: "bg-gray-100 text-gray-600" }
-          ].map((item, i) => (
-            <button key={i} className="bg-white p-4 rounded-[24px] shadow-sm border border-gray-100 flex flex-col items-center gap-2 active:scale-95 transition-all text-gray-700">
-              <div className={`${item.color} w-12 h-12 rounded-2xl flex items-center justify-center text-2xl`}>
-                {item.icon}
-              </div>
-              <span className="font-bold text-xs">{item.label}</span>
-            </button>
-          ))}
+          <button
+            className="flex flex-col items-center gap-1 text-white/60 hover:text-white active:opacity-70 transition-all"
+          >
+            <History size={24} />
+            <span className="text-xs font-semibold">History</span>
+          </button>
+          <button
+            className="flex flex-col items-center gap-1 text-white/60 hover:text-white active:opacity-70 transition-all"
+          >
+            <Wallet size={24} />
+            <span className="text-xs font-semibold">Wallet</span>
+          </button>
+          <button
+            className="flex flex-col items-center gap-1 text-white/60 hover:text-white active:opacity-70 transition-all"
+          >
+            <User size={24} />
+            <span className="text-xs font-semibold">Profile</span>
+          </button>
         </div>
       </div>
     </div>
   );
 };
 
-export default WesternDashboard;
+export default Dashboard;

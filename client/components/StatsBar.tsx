@@ -33,9 +33,9 @@ export default function StatsBar({
       </div>
       <div className="bg-slate-900 border border-cyan-500 rounded-lg p-2 md:p-3">
         <p className="text-xs uppercase tracking-widest text-cyan-400 font-mono">
-          Derrah
+          Stake
         </p>
-        <p className="text-xl md:text-2xl font-bold text-cyan-400 font-mono">{derrah}</p>
+        <p className="text-xl md:text-2xl font-bold text-cyan-400 font-mono">{derrah} ETB</p>
       </div>
     </div>
   );

@@ -5,14 +5,21 @@ import BingoGame from '@/components/BingoGame';
 export default function Game() {
   const navigate = useNavigate();
   const [selectedBoards, setSelectedBoards] = useState<number[] | null>(null);
+  const [stake, setStake] = useState<string>('10');
 
   useEffect(() => {
-    const stored = sessionStorage.getItem('selectedBoards');
-    if (stored) {
-      setSelectedBoards(JSON.parse(stored));
+    const storedBoards = sessionStorage.getItem('selectedBoards');
+    const storedStake = sessionStorage.getItem('stake');
+
+    if (storedBoards) {
+      setSelectedBoards(JSON.parse(storedBoards));
     } else {
       // If no boards selected, redirect back to selection
       navigate('/');
+    }
+
+    if (storedStake) {
+      setStake(storedStake);
     }
   }, [navigate]);
 
@@ -26,7 +33,7 @@ export default function Game() {
 
   return (
     <div>
-      <BingoGame boardNumbers={selectedBoards} />
+      <BingoGame boardNumbers={selectedBoards} stake={stake} />
     </div>
   );
 }
