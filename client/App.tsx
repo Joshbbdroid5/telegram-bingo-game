@@ -23,8 +23,7 @@ const App = () => (
       <Router>
         <Routes>
           <Route path="/" element={<Dashboard />} />
-  {/* Route-onni biroon kanaan dura turan asitti itti fufu */}
-<Route path="/" element={<BoardSelection />} />
+          <Route path="/boardselection" element={<BoardSelection />} />
           <Route path="/game" element={<Game />} />
           <Route path="/classic" element={<Index />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
