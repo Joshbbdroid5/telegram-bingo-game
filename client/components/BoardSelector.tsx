@@ -1,137 +1,134 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, RotateCw, Gamepad2, History, Wallet, User } from 'lucide-react';
 
 interface BoardSelectorProps {
   onBoardsSelected: (boardNumbers: number[]) => void;
 }
 
 export default function BoardSelector({ onBoardsSelected }: BoardSelectorProps) {
-  const [selectedBoards, setSelectedBoards] = useState<Set<number>>(new Set());
-  const [timeRemaining, setTimeRemaining] = useState(30);
-  const [isStarting, setIsStarting] = useState(false);
-  const [selectionLocked, setSelectionLocked] = useState(false);
+  const navigate = useNavigate();
+  const [selectedBoard, setSelectedBoard] = useState<number | null>(null);
 
-  useEffect(() => {
-    // Lock selection and start timer when user selects a board
-    if (selectedBoards.size > 0 && !selectionLocked) {
-      setSelectionLocked(true);
-      setTimeRemaining(30);
-    }
-  }, [selectedBoards, selectionLocked]);
-
-  useEffect(() => {
-    // Only start countdown if selection is locked
-    if (!selectionLocked) return;
-
-    const timer = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-
-          // Auto-start with selected boards
-          setIsStarting(true);
-          const boardsToUse = Array.from(selectedBoards).sort((a, b) => a - b);
-
-          setTimeout(() => {
-            onBoardsSelected(boardsToUse);
-          }, 1000);
-
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [selectionLocked, selectedBoards, onBoardsSelected]);
-
-  const handleBoardToggle = (boardNumber: number) => {
-    // Only allow selection changes if selection is not locked
-    if (selectionLocked) return;
-
-    const newSelected = new Set(selectedBoards);
-
-    if (newSelected.has(boardNumber)) {
-      newSelected.delete(boardNumber);
-    } else if (newSelected.size < 2) {
-      newSelected.add(boardNumber);
-    }
-
-    setSelectedBoards(newSelected);
+  const handleRefresh = () => {
+    window.location.reload();
   };
 
-
-  if (isStarting) {
-    return (
-      <div className="min-h-screen w-full bg-slate-950 text-white flex items-center justify-center p-3">
-        <div className="text-center">
-          <h1 className="text-5xl font-bold mb-4 text-cyan-400">Starting...</h1>
-          <p className="text-xl text-slate-300">Get ready for your game!</p>
-        </div>
-      </div>
-    );
-  }
+  const handleBoardSelect = (boardNumber: number) => {
+    // Allow selection of one board, deselect if clicking the same board
+    if (selectedBoard === boardNumber) {
+      setSelectedBoard(null);
+    } else {
+      setSelectedBoard(boardNumber);
+      // Auto-navigate to game when a board is selected
+      setTimeout(() => {
+        onBoardsSelected([boardNumber]);
+      }, 300);
+    }
+  };
 
   return (
-    <div className="min-h-screen w-full bg-slate-950 text-white p-3 md:p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header with Countdown */}
-        <div className="mb-6">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">Select Your Bingo Boards</h1>
-              <p className="text-slate-400">
-                {selectionLocked
-                  ? `Waiting to start with ${selectedBoards.size} board${selectedBoards.size !== 1 ? 's' : ''}...`
-                  : 'Select 1 or 2 boards to begin'}
-              </p>
-            </div>
-            {selectionLocked && (
-              <div className="text-center">
-                <div className="text-5xl font-bold font-mono mb-2 text-cyan-400">
-                  {timeRemaining}
-                </div>
-                <p className="text-xs text-slate-400">seconds to start</p>
-              </div>
-            )}
-          </div>
-          <div className="mt-4">
-            <div className="text-sm">
-              <span className="font-mono text-cyan-400">
-                Selected: {selectedBoards.size} / 2
-              </span>
-            </div>
+    <div className="min-h-screen w-full bg-gradient-to-b from-[#2d1b4e] to-[#1a0f2e] text-white flex flex-col">
+      {/* Header */}
+      <div className="px-4 pt-4 pb-4 border-b border-white/10">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-lg font-bold">Beteseb Bingo</h1>
+          <div className="flex gap-2">
+            <button
+              onClick={() => navigate('/')}
+              className="flex items-center gap-2 bg-purple-700/50 hover:bg-purple-700 text-white px-3 py-2 rounded-lg transition-all font-semibold text-sm"
+            >
+              <ArrowLeft size={16} />
+              Back
+            </button>
+            <button
+              onClick={handleRefresh}
+              className="flex items-center gap-2 bg-purple-700/50 hover:bg-purple-700 text-white px-3 py-2 rounded-lg transition-all font-semibold text-sm"
+            >
+              <RotateCw size={16} />
+              Refresh
+            </button>
           </div>
         </div>
 
+        {/* Stats Bar */}
+        <div className="grid grid-cols-4 gap-2">
+          <div className="bg-purple-600/40 border border-purple-500/60 rounded-lg p-2 text-center">
+            <p className="text-xs text-white/70 font-semibold">Main Wallet</p>
+            <p className="text-sm font-bold text-white">0</p>
+          </div>
+          <div className="bg-purple-600/40 border border-purple-500/60 rounded-lg p-2 text-center">
+            <p className="text-xs text-white/70 font-semibold">Play Wallet</p>
+            <p className="text-sm font-bold text-white">0</p>
+          </div>
+          <div className="bg-purple-600/40 border border-purple-500/60 rounded-lg p-2 text-center">
+            <p className="text-xs text-white/70 font-semibold">Stake</p>
+            <p className="text-sm font-bold text-white">10 ETB</p>
+          </div>
+          <div className="bg-purple-600/40 border border-purple-500/60 rounded-lg p-2 text-center">
+            <p className="text-xs text-white/70 font-semibold">Selected</p>
+            <p className="text-lg font-bold text-yellow-400">{selectedBoard ? selectedBoard : '-'}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto px-4 py-6">
         {/* Boards Grid */}
-        <div className="grid grid-cols-5 gap-2 mb-6">
-          {Array.from({ length: 500 }, (_, i) => i + 1).map((boardNumber) => {
-            const isSelected = selectedBoards.has(boardNumber);
-            const canSelect = !selectionLocked && selectedBoards.size < 2;
+        <div className="grid grid-cols-8 gap-1">
+          {Array.from({ length: 600 }, (_, i) => i + 1).map((boardNumber) => {
+            const isSelected = selectedBoard === boardNumber;
 
             return (
               <button
                 key={boardNumber}
-                onClick={() => handleBoardToggle(boardNumber)}
+                onClick={() => handleBoardSelect(boardNumber)}
                 className={`
-                  aspect-square rounded font-bold text-sm font-mono
-                  transition-all duration-200 flex items-center justify-center border
+                  aspect-square rounded font-bold text-xs font-mono
+                  transition-all duration-200 flex items-center justify-center border-2
                   ${
                     isSelected
-                      ? 'bg-green-500 border-green-600 text-green-900'
-                      : 'bg-red-500 border-red-600 text-blue-400'
+                      ? 'bg-green-500 border-green-700 text-white scale-105'
+                      : 'bg-orange-500 border-blue-600 text-white hover:bg-orange-600'
                   }
-                  ${!canSelect && !isSelected ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}
-                  ${selectionLocked && !isSelected ? 'hover:bg-red-500' : !isSelected ? 'hover:bg-red-600' : ''}
                 `}
-                disabled={!canSelect && !isSelected}
               >
                 {boardNumber}
               </button>
             );
           })}
         </div>
+      </div>
 
+      {/* Bottom Navigation */}
+      <div className="border-t border-white/20 bg-white/5 backdrop-blur-sm">
+        <div className="flex justify-around items-center px-4 py-4 max-w-2xl mx-auto w-full">
+          <button
+            onClick={() => navigate('/')}
+            className="flex flex-col items-center gap-1 text-cyan-400 active:opacity-70 transition-all"
+          >
+            <Gamepad2 size={24} />
+            <span className="text-xs font-semibold">Game</span>
+          </button>
+          <button
+            className="flex flex-col items-center gap-1 text-white/60 hover:text-white active:opacity-70 transition-all"
+          >
+            <History size={24} />
+            <span className="text-xs font-semibold">History</span>
+          </button>
+          <button
+            className="flex flex-col items-center gap-1 text-white/60 hover:text-white active:opacity-70 transition-all"
+          >
+            <Wallet size={24} />
+            <span className="text-xs font-semibold">Wallet</span>
+          </button>
+          <button
+            className="flex flex-col items-center gap-1 text-white/60 hover:text-white active:opacity-70 transition-all"
+          >
+            <User size={24} />
+            <span className="text-xs font-semibold">Profile</span>
+          </button>
+        </div>
       </div>
     </div>
   );

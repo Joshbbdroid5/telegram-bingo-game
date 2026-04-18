@@ -1,9 +1,5 @@
-import { useState, useCallback } from 'react';
-import StatsBar from './StatsBar';
-import ControlPanel from './ControlPanel';
-import NumberDisplay from './NumberDisplay';
+import { useState, useCallback, useEffect } from 'react';
 import BingoCard from './BingoCard';
-import LastNumbersCalled from './LastNumbersCalled';
 
 interface BingoCardData {
   id: string;
@@ -81,13 +77,26 @@ const checkBingo = (markedCells: Set<string>): boolean => {
 };
 
 interface BingoGameProps {
-  boardNumbers?: number[];
+  boardNumber?: number;
   stake?: string;
+  isWatchingOnly?: boolean;
 }
 
-export default function BingoGame({ boardNumbers = [6, 7], stake = '10' }: BingoGameProps) {
+const generateGameId = () => {
+  return Math.random().toString(36).substr(2, 8).toUpperCase();
+};
+
+const getLetterForNumber = (num: number): string => {
+  if (num <= 15) return 'B';
+  if (num <= 30) return 'I';
+  if (num <= 45) return 'N';
+  if (num <= 60) return 'G';
+  return 'O';
+};
+
+export default function BingoGame({ boardNumber = 1, stake = '10', isWatchingOnly = false }: BingoGameProps) {
   const [cards, setCards] = useState<BingoCardData[]>(
-    boardNumbers.map((num) => generateBingoCard(num))
+    [generateBingoCard(boardNumber)]
   );
   const [calledNumbers, setCalledNumbers] = useState<Set<number>>(new Set());
   const [currentNumber, setCurrentNumber] = useState<number | null>(null);
@@ -95,6 +104,10 @@ export default function BingoGame({ boardNumbers = [6, 7], stake = '10' }: Bingo
   const [volume, setVolume] = useState(50);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [timerStarted, setTimerStarted] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState(30);
+  const [gameId] = useState(generateGameId());
+  const [playersCount] = useState(3);
 
   const callNumber = useCallback(() => {
     setIsLoading(true);
@@ -132,102 +145,203 @@ export default function BingoGame({ boardNumbers = [6, 7], stake = '10' }: Bingo
   }, [calledNumbers]);
 
   const resetGame = () => {
-    setCards(boardNumbers.map((num) => generateBingoCard(num)));
+    setCards([generateBingoCard(boardNumber)]);
     setCalledNumbers(new Set());
     setCurrentNumber(null);
+    setTimerStarted(false);
+    setTimeRemaining(30);
   };
 
-  return (
-    <div className="min-h-screen w-full bg-slate-950 text-white p-3 md:p-6">
-      {/* Stats Bar */}
-      <StatsBar
-        cartela={cards.length}
-        called={calledNumbers.size}
-        wallet={50}
-        derrah={parseInt(stake)}
-      />
+  // Timer effect - starts when a user wins
+  useEffect(() => {
+    const hasWinner = cards.some(card => card.isWinner);
 
-      {/* Main Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6 max-w-7xl mx-auto">
-        {/* Left Panel - Control */}
-        <div className="lg:col-span-1">
-          <ControlPanel
-            volume={volume}
-            onVolumeChange={setVolume}
-            calledNumbers={calledNumbers}
-          />
+    if (hasWinner && !timerStarted) {
+      setTimerStarted(true);
+      setTimeRemaining(30);
+    }
+  }, [cards, timerStarted]);
+
+  // Countdown timer effect - runs when timer is started
+  useEffect(() => {
+    if (!timerStarted) return;
+
+    const timer = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          // Timer finished - you can add logic here for what happens when timer ends
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timerStarted]);
+
+  return (
+    <div className="min-h-screen w-full bg-gradient-to-b from-[#2d1b4e] to-[#1a0f2e] text-white flex flex-col">
+      {/* Header */}
+      <div className="px-4 pt-4 pb-3 border-b border-white/10">
+        <div className="flex items-center justify-between mb-3">
+          <h1 className="text-lg font-bold">Beteseb Bingo</h1>
+          <div className="flex gap-2">
+            <button className="text-white/60 hover:text-white">⋮</button>
+            <button className="text-white/60 hover:text-white">✕</button>
+          </div>
         </div>
 
-        {/* Right Panel - Cards Display */}
-        <div className="lg:col-span-3">
-          {/* Number Display */}
-          <NumberDisplay number={currentNumber} loading={isLoading} />
+        {/* Stats Header */}
+        <div className="grid grid-cols-5 gap-2 mb-3">
+          <div className="bg-purple-700/60 border border-purple-500/60 rounded-lg p-2 text-center">
+            <p className="text-xs font-semibold text-white/80">Game ID</p>
+            <p className="text-xs font-bold text-white">{gameId}</p>
+          </div>
+          <div className="bg-purple-700/60 border border-purple-500/60 rounded-lg p-2 text-center">
+            <p className="text-xs font-semibold text-white/80">Players</p>
+            <p className="text-xs font-bold text-white">{playersCount}</p>
+          </div>
+          <div className="bg-purple-700/60 border border-purple-500/60 rounded-lg p-2 text-center">
+            <p className="text-xs font-semibold text-white/80">Bet</p>
+            <p className="text-xs font-bold text-white">I-{stake}</p>
+          </div>
+          <div className="bg-purple-700/60 border border-purple-500/60 rounded-lg p-2 text-center">
+            <p className="text-xs font-semibold text-white/80">Derash</p>
+            <p className="text-xs font-bold text-white">42322</p>
+          </div>
+          <div className="bg-purple-700/60 border border-purple-500/60 rounded-lg p-2 text-center">
+            <p className="text-xs font-semibold text-white/80">Called</p>
+            <p className="text-xs font-bold text-white">{calledNumbers.size}</p>
+          </div>
+        </div>
 
-          {/* Bingo Cards */}
-          <div className="space-y-4 mb-6">
-            {cards.map((card) => (
-              <BingoCard
-                key={card.id}
-                cardId={card.id}
-                cardNumber={card.number}
-                grid={card.grid}
-                markedCells={card.markedCells}
-                isWinner={card.isWinner}
+        {/* Player Badges */}
+        <div className="flex gap-1 flex-wrap">
+          {['B', 'I', 'M', 'G', 'O', 'I-20', 'B-6', 'O-67', 'G-54'].map((badge, idx) => (
+            <div
+              key={idx}
+              className={`px-2 py-1 rounded font-bold text-xs ${
+                badge.includes('-')
+                  ? 'bg-blue-600'
+                  : ['bg-cyan-500', 'bg-purple-600', 'bg-purple-500', 'bg-green-600', 'bg-orange-500', 'bg-indigo-600', 'bg-blue-600', 'bg-orange-700'][idx]
+              }`}
+            >
+              {badge}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto px-4 py-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {/* Left Panel - Calling Grid */}
+          <div className="md:col-span-1">
+            <div className="grid grid-cols-5 gap-1">
+              {Array.from({ length: 75 }, (_, i) => i + 1).map((num) => {
+                const isCalled = calledNumbers.has(num);
+                const letter = getLetterForNumber(num);
+                return (
+                  <div
+                    key={num}
+                    className={`aspect-square rounded flex items-center justify-center font-bold text-xs ${
+                      isCalled
+                        ? 'bg-orange-500 text-white border-2 border-orange-600'
+                        : 'bg-slate-800 text-cyan-400 border-2 border-slate-700'
+                    }`}
+                  >
+                    <div className="text-center">
+                      <div className="text-xs">{letter}</div>
+                      <div className="text-sm font-black">{num}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Right Panel */}
+          <div className="md:col-span-2">
+            {/* Current Number Display */}
+            <div className="bg-purple-900/40 border-2 border-purple-500/60 rounded-3xl p-8 mb-6 text-center">
+              {currentNumber ? (
+                <>
+                  <div className="text-6xl font-black text-yellow-400 mb-4">
+                    {getLetterForNumber(currentNumber)}-{currentNumber}
+                  </div>
+                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-300 mx-auto flex items-center justify-center">
+                    <span className="text-5xl font-black text-purple-900">
+                      {getLetterForNumber(currentNumber)}-{currentNumber}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="py-12">
+                  <p className="text-white/60 text-lg">No number called yet</p>
+                </div>
+              )}
+            </div>
+
+            {/* Automatic Toggle */}
+            <div className="flex items-center justify-between bg-purple-700/40 border border-purple-500/60 rounded-lg p-4 mb-6">
+              <span className="font-semibold text-sm">Automatic</span>
+              <button
+                onClick={() => setIsAutoPlay(!isAutoPlay)}
+                className={`w-12 h-6 rounded-full transition-all ${isAutoPlay ? 'bg-green-500' : 'bg-gray-600'}`}
               />
-            ))}
-          </div>
+            </div>
 
-          {/* Control Buttons */}
-          <div className="flex gap-3 mb-4">
-            <button
-              onClick={callNumber}
-              disabled={isLoading}
-              className={`
-                flex-1 py-2 rounded-lg font-bold text-xs
-                ${
-                  isAutoPlay
-                    ? 'bg-cyan-500 hover:bg-cyan-600 text-slate-900'
-                    : 'bg-slate-700 hover:bg-slate-600 text-white'
-                }
-                disabled:opacity-50 disabled:cursor-not-allowed
-                transition-colors
-              `}
-            >
-              ✓ AUTO
-            </button>
-            <button
-              onClick={callNumber}
-              disabled={isLoading}
-              className={`
-                flex-1 py-2 rounded-lg font-bold text-xs
-                ${
-                  !isAutoPlay
-                    ? 'bg-cyan-500 hover:bg-cyan-600 text-slate-900'
-                    : 'bg-slate-700 hover:bg-slate-600 text-white'
-                }
-                disabled:opacity-50 disabled:cursor-not-allowed
-                transition-colors
-              `}
-            >
-              MANUAL
-            </button>
-          </div>
+            {/* Watching Only Message */}
+            {isWatchingOnly && (
+              <div className="bg-purple-900/60 border-2 border-purple-500/60 rounded-2xl p-6 mb-6 text-center">
+                <h3 className="text-2xl font-bold text-white mb-4">Watching</h3>
+                <h4 className="text-2xl font-bold text-white mb-4">Only</h4>
+                <p className="text-white/80 text-sm leading-relaxed">
+                  You haven't selected any boards<br />
+                  so you can view the game without<br />
+                  selecting a board
+                </p>
+              </div>
+            )}
 
-          {/* Call Number Button */}
+            {/* Bingo Card Display */}
+            {!isWatchingOnly && cards.length > 0 && (
+              <div className="bg-purple-900/40 border-2 border-purple-500/60 rounded-2xl p-4 mb-6">
+                <BingoCard
+                  cardId={cards[0].id}
+                  cardNumber={cards[0].number}
+                  grid={cards[0].grid}
+                  markedCells={cards[0].markedCells}
+                  isWinner={cards[0].isWinner}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Control Buttons */}
+      <div className="border-t border-white/10 bg-white/5 backdrop-blur-sm px-4 py-4">
+        <div className="grid grid-cols-3 gap-3 max-w-2xl mx-auto">
+          <button
+            onClick={() => window.history.back()}
+            className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-lg transition-all active:scale-95 text-sm"
+          >
+            Leave
+          </button>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-red-900/60 border border-red-700 hover:bg-red-900 text-white font-bold py-3 rounded-lg transition-all active:scale-95 text-sm flex items-center justify-center gap-2"
+          >
+            ⟲ Refresh
+          </button>
           <button
             onClick={callNumber}
             disabled={isLoading}
-            className="w-full bg-cyan-500 hover:bg-cyan-600 text-slate-900 font-bold py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm mb-2"
+            className="bg-yellow-700 hover:bg-yellow-800 text-white font-bold py-3 rounded-lg transition-all active:scale-95 disabled:opacity-50 text-sm"
           >
-            {isLoading ? 'Calling...' : 'Call Number'}
-          </button>
-
-          {/* Reset Button */}
-          <button
-            onClick={resetGame}
-            className="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-2 rounded-lg transition-colors text-sm"
-          >
-            New Game
+            {isLoading ? 'Calling...' : 'Automatic'}
           </button>
         </div>
       </div>

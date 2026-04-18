@@ -6,12 +6,13 @@ export default function BoardSelection() {
   const [searchParams] = useSearchParams();
   const stake = searchParams.get('stake') || '10';
 
-  const handleBoardsSelected = (boardNumbers: number[]) => {
-    // Store selected boards and stake in sessionStorage and navigate to game
-    sessionStorage.setItem('selectedBoards', JSON.stringify(boardNumbers));
+  const handleBoardSelected = (boardNumbers: number[]) => {
+    // Store selected board and stake in sessionStorage and navigate to game
+    // boardNumbers will contain a single board number
+    sessionStorage.setItem('selectedBoard', String(boardNumbers[0]));
     sessionStorage.setItem('stake', stake);
     navigate('/game');
   };
 
-  return <BoardSelector onBoardsSelected={handleBoardsSelected} />;
+  return <BoardSelector onBoardsSelected={handleBoardSelected} />;
 }

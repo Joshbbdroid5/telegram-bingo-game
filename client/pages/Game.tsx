@@ -1,39 +1,35 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import BingoGame from '@/components/BingoGame';
 
 export default function Game() {
-  const navigate = useNavigate();
-  const [selectedBoards, setSelectedBoards] = useState<number[] | null>(null);
+  const [selectedBoard, setSelectedBoard] = useState<number | null>(null);
   const [stake, setStake] = useState<string>('10');
+  const [isWatchingOnly, setIsWatchingOnly] = useState(false);
 
   useEffect(() => {
-    const storedBoards = sessionStorage.getItem('selectedBoards');
+    const storedBoard = sessionStorage.getItem('selectedBoard');
     const storedStake = sessionStorage.getItem('stake');
 
-    if (storedBoards) {
-      setSelectedBoards(JSON.parse(storedBoards));
+    if (storedBoard) {
+      setSelectedBoard(parseInt(storedBoard));
+      setIsWatchingOnly(false);
     } else {
-      // If no boards selected, redirect back to selection
-      navigate('/');
+      // Allow viewing game without a board selection (watching only mode)
+      setIsWatchingOnly(true);
     }
 
     if (storedStake) {
       setStake(storedStake);
     }
-  }, [navigate]);
-
-  if (!selectedBoards) {
-    return (
-      <div className="min-h-screen w-full bg-slate-950 text-white flex items-center justify-center p-4">
-        <p>Loading...</p>
-      </div>
-    );
-  }
+  }, []);
 
   return (
     <div>
-      <BingoGame boardNumbers={selectedBoards} stake={stake} />
+      <BingoGame
+        boardNumber={selectedBoard || 1}
+        stake={stake}
+        isWatchingOnly={isWatchingOnly}
+      />
     </div>
   );
 }
