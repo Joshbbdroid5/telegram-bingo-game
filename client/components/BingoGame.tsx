@@ -1,5 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import BingoCard from './BingoCard';
+import WinnerModal from './WinnerModal';
 
 interface BingoCardData {
   id: string;
@@ -73,7 +74,15 @@ const checkBingo = (markedCells: Set<string>): boolean => {
     markedCells.has(`${i}-${4 - i}`)
   ).every((x) => x);
 
-  return diag1 || diag2;
+  // Check four corners
+  const fourCorners = [
+    markedCells.has('0-0'),    // Top-left
+    markedCells.has('0-4'),    // Top-right
+    markedCells.has('4-0'),    // Bottom-left
+    markedCells.has('4-4'),    // Bottom-right
+  ].every((x) => x);
+
+  return diag1 || diag2 || fourCorners;
 };
 
 interface BingoGameProps {
@@ -108,6 +117,12 @@ export default function BingoGame({ boardNumber = 1, stake = '10', isWatchingOnl
   const [timeRemaining, setTimeRemaining] = useState(30);
   const [gameId] = useState(generateGameId());
   const [playersCount] = useState(3);
+  const [winners, setWinners] = useState<BingoCardData[]>([]);
+  const [showWinnerModal, setShowWinnerModal] = useState(false);
+  const [redirectCountdown, setRedirectCountdown] = useState(7);
+  const [totalSelectedBoards, setTotalSelectedBoards] = useState(0);
+  const [autoCallInterval, setAutoCallInterval] = useState<NodeJS.Timeout | null>(null);
+  const shouldContinueRef = useRef(true);
 
   const callNumber = useCallback(() => {
     setIsLoading(true);
@@ -152,15 +167,23 @@ export default function BingoGame({ boardNumber = 1, stake = '10', isWatchingOnl
     setTimeRemaining(30);
   };
 
-  // Timer effect - starts when a user wins
+  // Load total selected boards from sessionStorage
   useEffect(() => {
-    const hasWinner = cards.some(card => card.isWinner);
-
-    if (hasWinner && !timerStarted) {
-      setTimerStarted(true);
-      setTimeRemaining(30);
+    const stored = sessionStorage.getItem('totalSelectedBoards');
+    if (stored) {
+      setTotalSelectedBoards(parseInt(stored, 10));
     }
-  }, [cards, timerStarted]);
+  }, []);
+
+  // Handle winner detection and modal display
+  useEffect(() => {
+    const currentWinners = cards.filter(card => card.isWinner);
+
+    if (currentWinners.length > 0 && !showWinnerModal) {
+      setWinners(currentWinners);
+      setShowWinnerModal(true);
+    }
+  }, [cards, showWinnerModal]);
 
   // Countdown timer effect - runs when timer is started
   useEffect(() => {
@@ -180,12 +203,71 @@ export default function BingoGame({ boardNumber = 1, stake = '10', isWatchingOnl
     return () => clearInterval(timer);
   }, [timerStarted]);
 
+  // 7-second redirect timer after winner is shown
+  useEffect(() => {
+    if (!showWinnerModal) return;
+
+    const timer = setInterval(() => {
+      setRedirectCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          // Redirect to board selection page
+          window.history.back();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [showWinnerModal]);
+
+  // Auto-call numbers effect
+  useEffect(() => {
+    if (isAutoPlay) {
+      shouldContinueRef.current = true;
+      // Start calling immediately if no numbers called yet
+      if (calledNumbers.size === 0) {
+        callNumber();
+      }
+      const interval = setInterval(() => {
+        if (shouldContinueRef.current && calledNumbers.size < 75 && !showWinnerModal) {
+          callNumber();
+        } else {
+          clearInterval(interval);
+          setAutoCallInterval(null);
+        }
+      }, 4000);
+      setAutoCallInterval(interval);
+      return () => {
+        shouldContinueRef.current = false;
+        clearInterval(interval);
+      };
+    } else {
+      shouldContinueRef.current = false;
+      if (autoCallInterval) {
+        clearInterval(autoCallInterval);
+        setAutoCallInterval(null);
+      }
+    }
+  }, [isAutoPlay, callNumber]); // Removed calledNumbers.size and showWinnerModal
+
+  // Stop auto-call when winner or all numbers called
+  useEffect(() => {
+    if ((showWinnerModal || calledNumbers.size >= 75) && autoCallInterval) {
+      shouldContinueRef.current = false;
+      clearInterval(autoCallInterval);
+      setAutoCallInterval(null);
+    }
+  }, [showWinnerModal, calledNumbers.size, autoCallInterval]);
+
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-[#2d1b4e] to-[#1a0f2e] text-white flex flex-col">
+      <WinnerModal winners={winners} isOpen={showWinnerModal} />
       {/* Header */}
       <div className="px-4 pt-4 pb-3 border-b border-white/10">
         <div className="flex items-center justify-between mb-3">
-          <h1 className="text-lg font-bold">Beteseb Bingo</h1>
+          <h1 className="text-lg font-bold">Western Bingo</h1>
           <div className="flex gap-2">
             <button className="text-white/60 hover:text-white">⋮</button>
             <button className="text-white/60 hover:text-white">✕</button>
@@ -193,7 +275,7 @@ export default function BingoGame({ boardNumber = 1, stake = '10', isWatchingOnl
         </div>
 
         {/* Stats Header */}
-        <div className="grid grid-cols-5 gap-2 mb-3">
+        <div className="grid grid-cols-6 gap-2 mb-3">
           <div className="bg-purple-700/60 border border-purple-500/60 rounded-lg p-2 text-center">
             <p className="text-xs font-semibold text-white/80">Game ID</p>
             <p className="text-xs font-bold text-white">{gameId}</p>
@@ -201,6 +283,10 @@ export default function BingoGame({ boardNumber = 1, stake = '10', isWatchingOnl
           <div className="bg-purple-700/60 border border-purple-500/60 rounded-lg p-2 text-center">
             <p className="text-xs font-semibold text-white/80">Players</p>
             <p className="text-xs font-bold text-white">{playersCount}</p>
+          </div>
+          <div className="bg-purple-700/60 border border-purple-500/60 rounded-lg p-2 text-center">
+            <p className="text-xs font-semibold text-white/80">Selected</p>
+            <p className="text-xs font-bold text-green-400">{totalSelectedBoards}</p>
           </div>
           <div className="bg-purple-700/60 border border-purple-500/60 rounded-lg p-2 text-center">
             <p className="text-xs font-semibold text-white/80">Bet</p>
@@ -247,7 +333,7 @@ export default function BingoGame({ boardNumber = 1, stake = '10', isWatchingOnl
                     key={num}
                     className={`aspect-square rounded flex items-center justify-center font-bold text-xs ${
                       isCalled
-                        ? 'bg-orange-500 text-white border-2 border-orange-600'
+                        ? 'bg-green-500 text-white border-2 border-green-600'
                         : 'bg-slate-800 text-cyan-400 border-2 border-slate-700'
                     }`}
                   >
@@ -338,10 +424,10 @@ export default function BingoGame({ boardNumber = 1, stake = '10', isWatchingOnl
           </button>
           <button
             onClick={callNumber}
-            disabled={isLoading}
+            disabled={isLoading || isAutoPlay}
             className="bg-yellow-700 hover:bg-yellow-800 text-white font-bold py-3 rounded-lg transition-all active:scale-95 disabled:opacity-50 text-sm"
           >
-            {isLoading ? 'Calling...' : 'Automatic'}
+            {isLoading ? 'Calling...' : isAutoPlay ? 'Auto On' : 'Call Next'}
           </button>
         </div>
       </div>

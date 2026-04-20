@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, RotateCw, Gamepad2, History, Wallet, User } from 'lucide-react';
 
@@ -9,30 +9,75 @@ interface BoardSelectorProps {
 export default function BoardSelector({ onBoardsSelected }: BoardSelectorProps) {
   const navigate = useNavigate();
   const [selectedBoard, setSelectedBoard] = useState<number | null>(null);
+  const [previousBoard, setPreviousBoard] = useState<number | null>(null);
+  const [timeRemaining, setTimeRemaining] = useState(60);
+  const [showGoodLuck, setShowGoodLuck] = useState(false);
 
   const handleRefresh = () => {
     window.location.reload();
   };
 
   const handleBoardSelect = (boardNumber: number) => {
-    // Allow selection of one board, deselect if clicking the same board
+    // Allow selection of one board, can switch to another board anytime during timer
     if (selectedBoard === boardNumber) {
+      // Deselecting current board
       setSelectedBoard(null);
+      setPreviousBoard(null);
     } else {
+      // If already had a board selected, that becomes available for others
+      if (selectedBoard !== null && selectedBoard !== boardNumber) {
+        // Board was switched, previous becomes available
+        setPreviousBoard(selectedBoard);
+      }
+      // Select new board
       setSelectedBoard(boardNumber);
-      // Auto-navigate to game when a board is selected
-      setTimeout(() => {
-        onBoardsSelected([boardNumber]);
-      }, 300);
     }
   };
 
+  // 60-second countdown timer effect
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setShowGoodLuck(true);
+          // Navigate to game after timer expires
+          setTimeout(() => {
+            const boardToSelect = selectedBoard || 1; // Default to board 1 if no selection
+            // Count this user's board selection + simulate other users' selections
+            // For this simulation: if user selected a board, that's 1 board selected in the system
+            // In a real multiplayer scenario, this would come from the backend
+            const countToStore = selectedBoard ? 1 : 0; // This user's selection counts as 1
+            sessionStorage.setItem('totalSelectedBoards', String(countToStore));
+            onBoardsSelected([boardToSelect]);
+          }, 1500);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [onBoardsSelected, selectedBoard]);
+
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-[#2d1b4e] to-[#1a0f2e] text-white flex flex-col">
+      {/* Good Luck Modal */}
+      {showGoodLuck && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-gradient-to-b from-[#2d1b4e] to-[#1a0f2e] border-2 border-green-500 rounded-2xl p-8 text-center max-w-md">
+            <h2 className="text-5xl font-black text-green-400 mb-4">Good Luck! 🍀</h2>
+            <p className="text-xl text-white mb-4">Starting game...</p>
+            <div className="text-sm text-white/60">
+              <p>Your board has been selected</p>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="px-4 pt-4 pb-4 border-b border-white/10">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-lg font-bold">Beteseb Bingo</h1>
+          <h1 className="text-lg font-bold">Western Bingo</h1>
           <div className="flex gap-2">
             <button
               onClick={() => navigate('/')}
@@ -61,9 +106,9 @@ export default function BoardSelector({ onBoardsSelected }: BoardSelectorProps) 
             <p className="text-xs text-white/70 font-semibold">Play Wallet</p>
             <p className="text-sm font-bold text-white">0</p>
           </div>
-          <div className="bg-purple-600/40 border border-purple-500/60 rounded-lg p-2 text-center">
-            <p className="text-xs text-white/70 font-semibold">Stake</p>
-            <p className="text-sm font-bold text-white">10 ETB</p>
+          <div className={`border rounded-lg p-2 text-center ${timeRemaining <= 10 ? 'bg-red-600/40 border-red-500/60' : 'bg-purple-600/40 border-purple-500/60'}`}>
+            <p className="text-xs text-white/70 font-semibold">Timer</p>
+            <p className={`text-lg font-bold ${timeRemaining <= 10 ? 'text-red-400' : 'text-yellow-400'}`}>{timeRemaining}s</p>
           </div>
           <div className="bg-purple-600/40 border border-purple-500/60 rounded-lg p-2 text-center">
             <p className="text-xs text-white/70 font-semibold">Selected</p>
