@@ -324,22 +324,25 @@ export default function BingoGame({ boardNumber = 1, stake = '10', isWatchingOnl
       <div className="flex flex-col gap-3 w-full px-2">
           {/* Left Panel - Calling Grid */}
           <div className="w-full mb-4">
-            <div className="grid grid-cols-5 gap-1 w-full">
-              {Array.from({ length: 75 }, (_, i) => i + 1).map((num) => {
-                const isCalled = calledNumbers.has(num);
-                const letter = getLetterForNumber(num);
+            <div className="grid grid-cols-5 gap-2 w-full">
+              {['B', 'I', 'N', 'G', 'O'].map((letter, colIndex) => {
+                const colMin = colIndex * 15 + 1;
+                const colMax = colMin + 14;
+                const calledInCol = Array.from(calledNumbers).filter(num => num >= colMin && num <= colMax).sort((a, b) => a - b);
                 return (
-                  <div
-                    key={num}
-                    className={`w-[38px] h-[38px] sm:w-[44px] sm:h-[44px] rounded flex items-center justify-center font-bold text-[9px] sm:text-xs ${
-                      isCalled
-                        ? 'bg-green-500 text-white border-2 border-green-600'
-                        : 'bg-slate-800 text-cyan-400 border-2 border-slate-700'
-                    }`}
-                  >
-                    <div className="text-center">
-                      <div className="text-[8px] sm:text-xs">{letter}</div>
-                      <div className="text-xs sm:text-sm font-black">{num}</div>
+                  <div key={letter} className="flex flex-col gap-1">
+                    <div className="text-center font-bold text-sm uppercase text-cyan-400 mb-1 tracking-wider">
+                      {letter}
+                    </div>
+                    <div className="flex flex-col gap-1 max-h-[200px] overflow-y-auto pr-1">
+                      {calledInCol.map(num => (
+                        <div
+                          key={num}
+                          className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white flex items-center justify-center font-bold text-xs sm:text-sm shadow-lg border-2 border-green-700 flex-shrink-0"
+                        >
+                          {num}
+                        </div>
+                      ))}
                     </div>
                   </div>
                 );
