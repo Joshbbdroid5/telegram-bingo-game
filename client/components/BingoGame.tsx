@@ -275,7 +275,7 @@ export default function BingoGame({ boardNumber = 1, stake = '10', isWatchingOnl
         </div>
 
         {/* Stats Header */}
-        <div className="grid grid-cols-6 gap-2 mb-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 mb-2">
           <div className="bg-purple-700/60 border border-purple-500/60 rounded-lg p-2 text-center">
             <p className="text-xs font-semibold text-white/80">Game ID</p>
             <p className="text-xs font-bold text-white">{gameId}</p>
@@ -321,25 +321,25 @@ export default function BingoGame({ boardNumber = 1, stake = '10', isWatchingOnl
 
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto px-4 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+      <div className="flex flex-col gap-3 w-full px-2">
           {/* Left Panel - Calling Grid */}
-          <div className="md:col-span-1">
-            <div className="grid grid-cols-5 gap-1">
+          <div className="w-full mb-4">
+            <div className="grid grid-cols-5 gap-1 w-full">
               {Array.from({ length: 75 }, (_, i) => i + 1).map((num) => {
                 const isCalled = calledNumbers.has(num);
                 const letter = getLetterForNumber(num);
                 return (
                   <div
                     key={num}
-                    className={`aspect-square rounded flex items-center justify-center font-bold text-xs ${
+                    className={`w-[38px] h-[38px] sm:w-[44px] sm:h-[44px] rounded flex items-center justify-center font-bold text-[9px] sm:text-xs ${
                       isCalled
                         ? 'bg-green-500 text-white border-2 border-green-600'
                         : 'bg-slate-800 text-cyan-400 border-2 border-slate-700'
                     }`}
                   >
                     <div className="text-center">
-                      <div className="text-xs">{letter}</div>
-                      <div className="text-sm font-black">{num}</div>
+                      <div className="text-[8px] sm:text-xs">{letter}</div>
+                      <div className="text-xs sm:text-sm font-black">{num}</div>
                     </div>
                   </div>
                 );
@@ -348,42 +348,42 @@ export default function BingoGame({ boardNumber = 1, stake = '10', isWatchingOnl
           </div>
 
           {/* Right Panel */}
-          <div className="md:col-span-2">
+          <div>
             {/* Current Number Display */}
-            <div className="bg-purple-900/40 border-2 border-purple-500/60 rounded-3xl p-8 mb-6 text-center">
-              {currentNumber ? (
-                <>
-                  <div className="text-6xl font-black text-yellow-400 mb-4">
-                    {getLetterForNumber(currentNumber)}-{currentNumber}
-                  </div>
-                  <div className="w-32 h-32 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-300 mx-auto flex items-center justify-center">
-                    <span className="text-5xl font-black text-purple-900">
+              <div className="bg-purple-900/40 border-2 border-purple-500/60 rounded-2xl p-3 sm:p-5 mb-4 text-center">
+                {currentNumber ? (
+                  <>
+                    <div className="text-2xl sm:text-3xl md:text-4xl font-black text-yellow-400 mb-2">
                       {getLetterForNumber(currentNumber)}-{currentNumber}
-                    </span>
+                    </div>
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-300 mx-auto flex items-center justify-center">
+                      <span className="text-xl sm:text-2xl md:text-3xl font-black text-purple-900">
+                        {getLetterForNumber(currentNumber)}-{currentNumber}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="py-8 sm:py-10">
+                    <p className="text-white/60 text-base sm:text-lg">No number called yet</p>
                   </div>
-                </>
-              ) : (
-                <div className="py-12">
-                  <p className="text-white/60 text-lg">No number called yet</p>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
 
             {/* Automatic Toggle */}
-            <div className="flex items-center justify-between bg-purple-700/40 border border-purple-500/60 rounded-lg p-4 mb-6">
-              <span className="font-semibold text-sm">Automatic</span>
+            <div className="flex items-center justify-between bg-purple-700/40 border border-purple-500/60 rounded-lg p-3 sm:p-4 mb-3">
+              <span className="font-semibold text-xs sm:text-sm">Automatic</span>
               <button
                 onClick={() => setIsAutoPlay(!isAutoPlay)}
-                className={`w-12 h-6 rounded-full transition-all ${isAutoPlay ? 'bg-green-500' : 'bg-gray-600'}`}
+                className={`w-10 h-5 sm:w-12 sm:h-6 rounded-full transition-all ${isAutoPlay ? 'bg-green-500' : 'bg-gray-600'}`}
               />
             </div>
 
             {/* Watching Only Message */}
             {isWatchingOnly && (
-              <div className="bg-purple-900/60 border-2 border-purple-500/60 rounded-2xl p-6 mb-6 text-center">
-                <h3 className="text-2xl font-bold text-white mb-4">Watching</h3>
-                <h4 className="text-2xl font-bold text-white mb-4">Only</h4>
-                <p className="text-white/80 text-sm leading-relaxed">
+              <div className="bg-purple-900/60 border-2 border-purple-500/60 rounded-xl p-3 sm:p-4 mb-3 text-center">
+                <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">Watching</h3>
+                <h4 className="text-xl sm:text-2xl font-bold text-white mb-2">Only</h4>
+                <p className="text-white/80 text-xs sm:text-sm leading-relaxed">
                   You haven't selected any boards<br />
                   so you can view the game without<br />
                   selecting a board
@@ -393,7 +393,7 @@ export default function BingoGame({ boardNumber = 1, stake = '10', isWatchingOnl
 
             {/* Bingo Card Display */}
             {!isWatchingOnly && cards.length > 0 && (
-              <div className="bg-purple-900/40 border-2 border-purple-500/60 rounded-2xl p-4 mb-6">
+              <div className="bg-purple-900/40 border-2 border-purple-500/60 rounded-xl p-2 sm:p-3 mb-3">
                 <BingoCard
                   cardId={cards[0].id}
                   cardNumber={cards[0].number}
@@ -409,23 +409,26 @@ export default function BingoGame({ boardNumber = 1, stake = '10', isWatchingOnl
 
       {/* Control Buttons */}
       <div className="border-t border-white/10 bg-white/5 backdrop-blur-sm px-4 py-4">
-        <div className="grid grid-cols-3 gap-3 max-w-2xl mx-auto">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 px-2 w-full">
           <button
             onClick={() => window.history.back()}
-            className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-lg transition-all active:scale-95 text-sm"
+            className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2.5 sm:py-3 rounded-lg transition-all active:scale-95 text-sm"
+            title="Leave game"
           >
             Leave
           </button>
           <button
             onClick={() => window.location.reload()}
-            className="bg-red-900/60 border border-red-700 hover:bg-red-900 text-white font-bold py-3 rounded-lg transition-all active:scale-95 text-sm flex items-center justify-center gap-2"
+            className="bg-red-900/60 border border-red-700 hover:bg-red-900 text-white font-bold py-2.5 sm:py-3 rounded-lg transition-all active:scale-95 text-sm flex items-center justify-center gap-2"
+            title="Refresh game"
           >
             ⟲ Refresh
           </button>
           <button
             onClick={callNumber}
             disabled={isLoading || isAutoPlay}
-            className="bg-yellow-700 hover:bg-yellow-800 text-white font-bold py-3 rounded-lg transition-all active:scale-95 disabled:opacity-50 text-sm"
+            className="bg-yellow-700 hover:bg-yellow-800 text-white font-bold py-2.5 sm:py-3 rounded-lg transition-all active:scale-95 disabled:opacity-50 text-sm"
+            title="Call next number"
           >
             {isLoading ? 'Calling...' : isAutoPlay ? 'Auto On' : 'Call Next'}
           </button>

@@ -19,7 +19,7 @@ export default function BingoCard({
   return (
     <div
       className={`
-        bg-slate-900 rounded-lg border p-3 mb-3
+        bg-slate-900 rounded-lg border p-2 sm:p-2.5 mb-2
         ${isWinner ? 'border-green-500' : 'border-slate-700'}
       `}
     >
@@ -35,7 +35,7 @@ export default function BingoCard({
       </div>
 
       {/* BINGO Header */}
-      <div className="grid grid-cols-5 gap-0.5 mb-1">
+      <div className="grid grid-cols-5 gap-0.5 sm:gap-1 mb-1">
         {COLUMN_LABELS.map((label, i) => (
           <div
             key={label}
@@ -58,7 +58,7 @@ export default function BingoCard({
       </div>
 
       {/* Grid */}
-      <div className="grid grid-cols-5 gap-0.5">
+      <div className="grid grid-cols-5 gap-0.5 sm:gap-1">
         {grid.map((row, rowIdx) =>
           row.map((num, colIdx) => {
             const cellId = `${rowIdx}-${colIdx}`;
@@ -85,9 +85,9 @@ export default function BingoCard({
                   <span className="text-xs text-cyan-400 font-bold">•</span>
                 ) : (
                   <>
-                    <span className="text-xs leading-none">{num}</span>
+                <span className="text-[10px] sm:text-xs leading-none">{num}</span>
                     {isMarked && (
-                      <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-white opacity-70">
+                      <div className="absolute inset-0 flex items-center justify-center text-xs sm:text-sm font-bold text-white opacity-70">
                         ✕
                       </div>
                     )}

@@ -118,9 +118,9 @@ export default function BoardSelector({ onBoardsSelected }: BoardSelectorProps) 
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
+      <div className="flex-1 overflow-y-auto px-2 sm:px-4 py-4">
         {/* Boards Grid */}
-        <div className="grid grid-cols-8 gap-1">
+        <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 gap-1.5">
           {Array.from({ length: 600 }, (_, i) => i + 1).map((boardNumber) => {
             const isSelected = selectedBoard === boardNumber;
 
@@ -129,7 +129,7 @@ export default function BoardSelector({ onBoardsSelected }: BoardSelectorProps) 
                 key={boardNumber}
                 onClick={() => handleBoardSelect(boardNumber)}
                 className={`
-                  aspect-square rounded font-bold text-xs font-mono
+                  aspect-square min-h-[38px] sm:min-h-[42px] rounded font-bold text-[10px] sm:text-xs font-mono
                   transition-all duration-200 flex items-center justify-center border-2
                   ${
                     isSelected
@@ -147,7 +147,7 @@ export default function BoardSelector({ onBoardsSelected }: BoardSelectorProps) 
 
       {/* Bottom Navigation */}
       <div className="border-t border-white/20 bg-white/5 backdrop-blur-sm">
-        <div className="flex justify-around items-center px-4 py-4 max-w-2xl mx-auto w-full">
+        <div className="flex justify-around items-center px-2 sm:px-4 py-3 sm:py-4 w-full">
           <button
             onClick={() => navigate('/')}
             className="flex flex-col items-center gap-1 text-cyan-400 active:opacity-70 transition-all"
